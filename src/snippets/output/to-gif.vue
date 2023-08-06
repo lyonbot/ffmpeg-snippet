@@ -1,15 +1,43 @@
-<script setup lang="ts">
-import { reactive } from "vue";
+<script lang="ts">
 import { NButton, NFormItem, NInputNumber, NSelect } from "naive-ui";
-import { FFmpegCommandLine, filterExpr } from "../../common/FFmpegCommandLine";
-import { nullIf } from "../../common/utils";
 import { SelectMixedOption } from "naive-ui/es/select/src/interface";
 
-const options = reactive({
+import { defineSnippet, SnippetStage, ParamsComponentFundamental } from "../../common/snippet";
+import { useObjectModel } from "../../common/useObjectModel";
+import { nullIf, filterExpr } from "../../common/utils";
+
+const defaults = {
   max_colors: 256,
   dither: "none",
   diff_mode: "none",
+};
+
+export const meta = defineSnippet({
+  title: "Convert to GIF (high quality)",
+  keywords: "gif",
+  stage: SnippetStage.Output,
+  defaults,
+  apply(options, ffArgs) {
+    const { max_colors, dither, diff_mode } = options;
+
+    ffArgs.vf.push(
+      "split [a][b]; " + // split for palette
+        `[a] ${filterExpr("palettegen", max_colors)} [p]; ` + // https://ffmpeg.org/ffmpeg-filters.html#palettegen
+        `[b][p] ${filterExpr("paletteuse", {
+          dither: nullIf(dither, "none"),
+          diff_mode: nullIf(diff_mode, "none"),
+        })}`
+    );
+  },
 });
+</script>
+
+<script setup lang="ts">
+defineProps<{
+  options: typeof defaults;
+}>();
+
+const options = useObjectModel("options", defaults);
 
 const incrColors = () => void (options.max_colors = Math.min(256, ~~(options.max_colors * 2)));
 const decrColors = () => void (options.max_colors = Math.max(2, ~~(options.max_colors / 2)));
@@ -61,19 +89,8 @@ const diffModeOptions: SelectMixedOption[] = [
 ];
 
 defineExpose({
-  applyTo(ffArgs: FFmpegCommandLine) {
-    const { max_colors, dither, diff_mode } = options;
-
-    ffArgs.vf.push(
-      "split [a][b]; " + // split for palette
-        `[a] ${filterExpr("palettegen", max_colors)} [p]; ` + // https://ffmpeg.org/ffmpeg-filters.html#palettegen
-        `[b][p] ${filterExpr("paletteuse", {
-          dither: nullIf(dither, "none"),
-          diff_mode: nullIf(diff_mode, "none"),
-        })}`
-    );
-  },
-});
+  options,
+} satisfies ParamsComponentFundamental);
 </script>
 
 <template>

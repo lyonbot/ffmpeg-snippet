@@ -2,6 +2,10 @@
 
 A collection of useful ffmpeg commands, with a UI Tool to search, configure and run!
 
+## Guideline
+
+The snippets are defined in `./src/snippets`. You can make a new snippet directory, define a snippet, then add it into `index.ts`.
+
 ## Building
 
 This is a frontend project built with:

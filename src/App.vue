@@ -1,19 +1,11 @@
 <script setup lang="ts">
 import { NForm } from "naive-ui";
-import ConvertToGif from "./snippets/to-gif";
 import { computed, onMounted, ref } from "vue";
-import { FFmpegCommandLine } from "./common/FFmpegCommandLine";
+import WorkflowEditor from "./components/WorkflowEditor.vue";
+import { FSWorkflow } from "./common/workflow";
 
-const cc = ref<InstanceType<any>>();
 const mounted = ref(false);
-
-const cmdLine = computed(() => {
-  mounted.value;
-  console.log(cc.value, mounted.value);
-  const args = new FFmpegCommandLine();
-  cc.value?.applyTo(args);
-  return args.toCommandArguments();
-});
+const workflow = ref({} as FSWorkflow);
 
 onMounted(() => {
   mounted.value = true;
@@ -23,10 +15,7 @@ onMounted(() => {
 <template>
   <h2>he</h2>
 
-  <NForm label-placement="left">
-    <ConvertToGif.ParamsComponent ref="cc" />
-  </NForm>
+  <WorkflowEditor v-model:workflow="workflow" />
 
-  <code>{{ cmdLine.join("\n") }}</code>
+  <pre>{{ workflow }}</pre>
 </template>
-./snippets/to-gif./snippets/to-gif
