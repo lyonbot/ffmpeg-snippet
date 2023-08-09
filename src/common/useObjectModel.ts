@@ -5,6 +5,15 @@ import { cloneDeep, has, pick } from "lodash";
  * like `defineModel` but it automatically complete the missing properties that defined in `defaults`
  *
  * returns a `T` and you can read and update it. all changes will be applied to the modelValue
+ *
+ * @example
+ *   defineProps<{
+ *     modelValue: SomeInterfaceObject;
+ *   }>();
+ *
+ *   const modelValue = useObjectModel("modelValue", defaultValues);
+ *
+ *   // then just use `modelValue`
  */
 export function useObjectModel<T extends Record<string, any>>(propKey: string, defaults: T): T {
   const options = reactive(cloneDeep(defaults)) as T;

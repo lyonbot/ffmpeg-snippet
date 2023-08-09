@@ -3,7 +3,7 @@ import { SnippetStage } from "./snippet";
 export interface FSWorkflowStageStep {
   id: string;
   type: string;
-  options?: any;
+  options: any;
 }
 
 export type FSWorkflow = {
