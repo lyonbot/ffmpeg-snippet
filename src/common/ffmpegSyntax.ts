@@ -1,4 +1,9 @@
-export function nullIf<T>(val: T, val2: T): T | null {
+/**
+ * If `val == val2`, return null, otherwise return `val`
+ *
+ * useful to output short commands and filter expressions
+ */
+export function ee<T>(val: T, val2: T): T | null {
   return val === val2 ? null : val;
 }
 
@@ -6,16 +11,16 @@ export function nullIf<T>(val: T, val2: T): T | null {
  * a simple string joiner for ffmpeg filter expression
  *
  * @example
- *   filterExpr('scale', { w: 800, h: 600 })
+ *   filter('scale', { w: 800, h: 600 })
  *   => "scale=w=800:h=600"
  *
- *   filterExpr('scale', 2)
+ *   filter('scale', 2)
  *   => "scale=2"
  *
- *   filterExpr('scale', null)
+ *   filter('scale', null)
  *   => "scale"
  */
-export function filterExpr(filterName: string, options?: Record<string, any> | string | number | null | undefined) {
+export function filter(filterName: string, options?: Record<string, any> | string | number | null | undefined) {
   let optionsString: string = "";
   if (options != null) {
     if (typeof options === "object") {

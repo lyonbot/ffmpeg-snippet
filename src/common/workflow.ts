@@ -1,12 +1,17 @@
-import { SnippetStage } from "./snippet";
-
-export interface FSWorkflowStageStep {
+export interface FFWorkflowStep {
   id: string;
   type: string;
   options: any;
+  disabled: boolean;
 }
 
-export type FSWorkflow = {
+export type FFWorkflow = {
+  /** ffmpeg allows multiple inputs; but in most case there is only one */
+  inputs: { path: string }[];
+
+  /** output path */
+  outputName: string;
+
   /** a stage is composed of a list of snippets */
-  [k in SnippetStage as `stage:${k}`]: FSWorkflowStageStep[];
+  process: FFWorkflowStep[];
 };

@@ -13,6 +13,7 @@ export class FFmpegCommandLine {
   af: string[] = [];
   others: Record<string, string | number> = {};
   inputs: FFmpegInput[] = [];
+  output: string = "";
 
   constructor() {}
 

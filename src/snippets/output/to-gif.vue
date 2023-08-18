@@ -2,9 +2,9 @@
 import { NButton, NFormItem, NInputNumber, NSelect } from "naive-ui";
 import { SelectMixedOption } from "naive-ui/es/select/src/interface";
 
-import { defineSnippet, SnippetStage, ParamsComponentFundamental } from "../../common/snippet";
-import { useObjectModel } from "../../common/useObjectModel";
-import { nullIf, filterExpr } from "../../common/utils";
+import { defineSnippet, ProcessStage, extname, filter, ee } from "@/common";
+import { useObjectModel } from "@/utils/useObjectModel";
+import type { ParamsComponentExposes } from "..";
 
 const defaults = {
   max_colors: 256,
@@ -13,19 +13,25 @@ const defaults = {
 };
 
 export const meta = defineSnippet({
-  title: "Convert to GIF (high quality)",
+  title: "High Quality GIF",
   keywords: "gif",
-  stage: SnippetStage.Output,
+  stage: ProcessStage.Output,
   defaults,
-  apply(options, ffArgs) {
-    const { max_colors, dither, diff_mode } = options;
+  *recommend(cmd) {
+    if (extname(cmd.output) === ".gif") yield {};
+  },
+  apply(opt, cmd, h) {
+    const { max_colors, dither, diff_mode } = opt;
 
-    ffArgs.vf.push(
+    if (max_colors !== defaults.max_colors) h.addSummary(`${max_colors} colors`);
+    if (dither !== defaults.dither) h.addSummary(`with ditcher`);
+
+    cmd.vf.push(
       "split [a][b]; " + // split for palette
-        `[a] ${filterExpr("palettegen", max_colors)} [p]; ` + // https://ffmpeg.org/ffmpeg-filters.html#palettegen
-        `[b][p] ${filterExpr("paletteuse", {
-          dither: nullIf(dither, "none"),
-          diff_mode: nullIf(diff_mode, "none"),
+        `[a] ${filter("palettegen", max_colors)} [p]; ` + // https://ffmpeg.org/ffmpeg-filters.html#palettegen
+        `[b][p] ${filter("paletteuse", {
+          dither: ee(dither, "none"),
+          diff_mode: ee(diff_mode, "none"),
         })}`
     );
   },
@@ -38,6 +44,10 @@ defineProps<{
 }>();
 
 const options = useObjectModel("options", defaults);
+
+defineExpose<ParamsComponentExposes>({
+  options,
+});
 
 const incrColors = () => void (options.max_colors = Math.min(256, ~~(options.max_colors * 2)));
 const decrColors = () => void (options.max_colors = Math.max(2, ~~(options.max_colors / 2)));
@@ -87,10 +97,6 @@ const diffModeOptions: SelectMixedOption[] = [
     label: "rectangle - good if the scene doesn't change much. only the changing rectangle will be reprocessed",
   },
 ];
-
-defineExpose({
-  options,
-} satisfies ParamsComponentFundamental);
 </script>
 
 <template>
