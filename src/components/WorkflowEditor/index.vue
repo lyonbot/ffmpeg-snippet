@@ -53,7 +53,9 @@ const formDiv = ref<HTMLDivElement>();
 function syncFormPosition(anchorDiv: HTMLDivElement | null) {
   if (!anchorDiv) return;
   let { offsetLeft: ol, offsetTop: ot } = anchorDiv;
-  let { offsetLeft: ol2, offsetTop: ot2 } = anchorDiv.offsetParent! as HTMLDivElement; // stepList is relative
+  let { offsetLeft: ol2, offsetTop: ot2, className: opClass } = anchorDiv.offsetParent! as HTMLDivElement; // stepList is relative
+
+  if (!opClass.includes("stepList")) return; // maybe dragging
 
   const left = ol + ol2 + 5;
   const top = ot + ot2 - theListContainer.value!.offsetHeight - arrowOffset;
@@ -228,7 +230,14 @@ watch(
 .stepList {
   position: relative;
   width: fit-content;
+  min-width: 200px;
+  min-height: 0;
+  transition: 0.1s;
+
   &.isDragging {
+    min-height: 2em;
+    z-index: 1;
+
     &::before {
       pointer-events: none;
       inset: -0.5em;
