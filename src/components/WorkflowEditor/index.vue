@@ -5,9 +5,10 @@ import { NButton, NForm } from "naive-ui";
 import { computed, nextTick, ref, watch } from "vue";
 import { ProcessStage, stageOrderList } from "@/common";
 import StepTab from "./StepTab.vue";
+import AddStep from "./AddStep.vue";
 
 const editor = useEditorStore();
-const selectedStepId = ref("a");
+const selectedStepId = ref("");
 const selectedStep = computed(() => editor.result.stepsOutput.find((s) => s.step.id === selectedStepId.value));
 
 // ----------------------------------------
@@ -119,6 +120,8 @@ watch(
           />
         </template>
       </Draggable>
+
+      <AddStep @add="selectedStepId = $event" @drag-stage-change="draggingStage = $event" />
     </div>
 
     <!-- step configuration form -->

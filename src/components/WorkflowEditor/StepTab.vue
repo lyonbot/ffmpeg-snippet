@@ -23,7 +23,8 @@ const emit = defineEmits<{
     class="stepTab"
     :class="{ isSelected: props.selected, isDisabled: props.disabled, withToggle: props.withToggle }"
     @click="emit('select')"
-    @keydown.stop.prevent="emit('select')"
+    @keydown.stop.prevent.space="emit('select')"
+    @keydown.stop.prevent.enter="emit('select')"
     tabindex="0"
     role="menuitem"
   >
@@ -33,7 +34,8 @@ const emit = defineEmits<{
     <div
       class="stepToggle"
       @click.stop="emit('toggle')"
-      @keydown.stop.prevent="emit('toggle')"
+      @keydown.stop.prevent.space="emit('toggle')"
+      @keydown.stop.prevent.enter="emit('toggle')"
       tabindex="0"
       role="menuitemcheckbox"
       title="Toggle this Snippet"
@@ -87,6 +89,7 @@ const emit = defineEmits<{
   }
 
   &:hover,
+  &:focus,
   &.isSelected {
     @apply bg-gray-3;
 
@@ -98,8 +101,11 @@ const emit = defineEmits<{
       opacity: 0.7;
       animation: ani-leftSlideIn 0.1s;
     }
+  }
 
-    &.withToggle {
+  &.withToggle {
+    &:hover,
+    &.isSelected {
       .stepToggle {
         display: block;
       }
@@ -110,6 +116,7 @@ const emit = defineEmits<{
     }
   }
 
+  &:active,
   &.isSelected {
     @apply bg-gray-7 text-white;
 

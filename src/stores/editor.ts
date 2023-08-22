@@ -36,7 +36,7 @@ const debugWorkflow: FFWorkflow = {
       id: "a",
       disabled: false,
       options: { max_colors: 128 },
-      type: "output/to-gif",
+      type: "1output/to-gif",
     },
   ],
 };
