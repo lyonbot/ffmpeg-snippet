@@ -4,6 +4,7 @@ import { useEditorStore } from "@/stores";
 import { NButton, NForm } from "naive-ui";
 import { computed, nextTick, ref, watch } from "vue";
 import { ProcessStage, stageOrderList } from "@/common";
+import StepTab from "./StepTab.vue";
 
 const editor = useEditorStore();
 const selectedStepId = ref("a");
@@ -85,6 +86,8 @@ watch(
     <div class="flex flex-col" ref="theListContainer">
       <Draggable
         v-for="{ steps, stage } in draggableSections"
+        :key="stage"
+        :group="`stage-${stage}`"
         :model-value="steps"
         :item-key="({item}: typeof steps[number]) => item.step.id"
         @change="handleDraggableChange"
@@ -93,7 +96,7 @@ watch(
         :animation="100"
         class="stepList"
         :class="{ isDragging: draggingStage === stage }"
-        ghostClass="isDragGhost"
+        ghost-class="isDragGhost"
       >
         <template
           #item="{
@@ -102,41 +105,18 @@ watch(
             },
           }"
         >
-          <div
-            class="stepTab"
-            :class="{ isSelected: step.id === selectedStepId, isDisabled: step.disabled }"
-            @click="selectedStepId = step.id"
-            @keydown.stop.prevent="selectedStepId = step.id"
-            tabindex="0"
-            role="menuitem"
-          >
-            <i class="i-mdi-drag-vertical stepDragger"></i>
-
-            <i class="i-mdi-package stepIcon"></i>
-            <div
-              class="stepToggle"
-              @click.stop="step.disabled = !step.disabled"
-              @keydown.stop.prevent="step.disabled = !step.disabled"
-              tabindex="0"
-              role="menuitemcheckbox"
-              title="Toggle this Snippet"
-            >
-              <i class="block" :class="step.disabled ? 'i-mdi-checkbox-blank' : 'i-mdi-checkbox-marked'"></i>
-            </div>
-
-            <div @click="if (step.id === selectedStepId) step.disabled = !step.disabled;">
-              {{ snippet?.title }}
-            </div>
-
-            <!-- anchor -->
-            <i class="i-mdi-chevron-double-right stepChevron"></i>
-            <div
-              :ref="(p) => (step.id === selectedStepId && $nextTick(() => syncFormPosition(p as HTMLDivElement)))"
-            ></div>
-
-            <div class="op50" v-for="txt in summaries">{{ txt }}</div>
-            <div class="text-amber-5" v-for="txt in warnings">{{ txt }}</div>
-          </div>
+          <StepTab
+            :selected="step.id === selectedStepId"
+            :disabled="step.disabled"
+            :title="snippet?.title || ''"
+            :summaries="summaries"
+            :warnings="warnings"
+            @select="selectedStepId = step.id"
+            @sync-form-position="$nextTick(() => syncFormPosition($event))"
+            with-toggle
+            :checked="!step.disabled"
+            @toggle="step.disabled = !step.disabled"
+          />
         </template>
       </Draggable>
     </div>
@@ -161,72 +141,6 @@ watch(
 </template>
 
 <style lang="scss">
-.stepTab {
-  @apply flex items-center gap-2 p-1 px-2 rounded-2;
-  cursor: pointer;
-  width: fit-content;
-  margin-left: -2em; // gap + padding-left + stepDragger width
-  transition: transform 0.1s;
-
-  &.isDisabled {
-    @apply line-through op-50 text-gray-7;
-  }
-
-  .stepDragger {
-    opacity: 0;
-    cursor: move;
-  }
-
-  .stepChevron {
-    opacity: 0;
-    margin: 0 -10px;
-  }
-
-  .stepToggle {
-    @apply text-white bg-black rounded;
-    display: none;
-
-    &:hover,
-    &:focus {
-      outline: 1px solid #fff;
-    }
-  }
-
-  &:hover,
-  &.isSelected {
-    @apply bg-gray-3;
-
-    .stepDragger {
-      opacity: 1;
-    }
-
-    .stepChevron {
-      opacity: 0.7;
-      animation: stepFormEntering 0.1s;
-    }
-
-    .stepToggle {
-      display: block;
-    }
-
-    .stepIcon {
-      display: none;
-    }
-  }
-
-  &.isSelected {
-    @apply bg-gray-7 text-white;
-
-    .stepChevron {
-      opacity: 0;
-    }
-  }
-
-  &.isDragGhost {
-    @apply bg-purple text-white;
-  }
-}
-
 .stepList {
   position: relative;
   width: fit-content;
@@ -251,7 +165,7 @@ watch(
 
 .stepForm {
   @apply bg-white relative z1 p4 b-l-solid b-l-1 b-gray-7;
-  animation: stepFormEntering 0.1s;
+  animation: ani-leftSlideIn 0.1s;
 
   &::before {
     position: absolute;
@@ -262,15 +176,6 @@ watch(
     content: " ";
     background: linear-gradient(90deg, #3330, #3336);
     border-radius: 20px 0 0 20px;
-  }
-}
-
-@keyframes stepFormEntering {
-  0% {
-    transform: translateX(-10px);
-  }
-  100% {
-    transform: translateX(0);
   }
 }
 

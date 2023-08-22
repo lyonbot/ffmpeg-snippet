@@ -6,3 +6,12 @@ body {
 .n-input:not(.n-input--autosize) {
   width: 260px;
 }
+
+@keyframes ani-leftSlideIn {
+  0% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
