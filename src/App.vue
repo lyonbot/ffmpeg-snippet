@@ -1,47 +1,19 @@
 <script setup lang="ts">
 import { NButton, NInput } from "naive-ui";
-import { useSnippetsStore, useWorkflowStore } from "./stores";
-import { FFmpegCommandLine } from "./common";
-import { computed } from "vue";
+import { useSnippetsStore, useEditorStore } from "./stores";
+import { storeToRefs } from "pinia";
+import WorkflowEditor from "@/components/WorkflowEditor/index.vue";
 
 const snippets = useSnippetsStore();
-const workflow = useWorkflowStore();
+const editor = useEditorStore();
 
-const ffOut = computed(() => {
-  const ffArgs = new FFmpegCommandLine();
-  const stepsOutput = [] as StepStat[];
-  type StepStat = { warnings: string[]; summaries: string[] };
-
-  workflow.inputs.forEach((x, i) => ffArgs.setInput(i, { path: x.path }));
-  ffArgs.output = workflow.outputName;
-
-  workflow.process.forEach((step, i) => {
-    const stat: StepStat = {
-      summaries: [],
-      warnings: [],
-    };
-    stepsOutput[i] = stat;
-
-    const mod = !step.disabled && snippets.dict[step.type];
-    if (!mod) return; // skip
-
-    mod.apply(step.options, ffArgs, {
-      addSummary: (message) => void stat.summaries.push(message),
-      addWarning: (message) => void stat.warnings.push(message),
-    });
-  });
-
-  return {
-    stepsOutput,
-    cmdArgs: ffArgs.toCommandArguments(),
-  };
-});
+const { workflow, result } = storeToRefs(editor);
 </script>
 
 <template>
-  <h1>FFmpeg snippets!</h1>
-
   <main>
+    <h1 style="grid-column: 1/-1">FFmpeg snippets!</h1>
+
     <!-- input -->
     <div class="section-label">Input:</div>
     <div class="section-content">
@@ -57,7 +29,7 @@ const ffOut = computed(() => {
 
     <!-- output -->
     <div class="section-label">Output:</div>
-    <div class="section-content flex">
+    <div class="section-content flex gap-1">
       <NInput v-model:value="workflow.outputName" />
       <NButton @click="workflow.outputName = '1.gif'">GIF</NButton>
       <NButton @click="workflow.outputName = 'frame%d.jpg'">frame%d.jpg</NButton>
@@ -66,20 +38,20 @@ const ffOut = computed(() => {
     <!-- Process -->
     <div class="section-label">Process:</div>
     <div class="section-content flex">
-      <pre>{{ workflow.process }}</pre>
+      <WorkflowEditor />
     </div>
 
     <!-- Command -->
     <div class="section-label">Command:</div>
     <div class="section-content">
-      <pre>{{ ffOut.cmdArgs }}</pre>
+      <pre>{{ result.cmdArgs }}</pre>
     </div>
   </main>
 </template>
 
 <style lang="scss">
 main {
-  @apply grid gap-4;
+  @apply grid gap-4 m8;
   grid-template-columns: 120px 1fr;
 }
 

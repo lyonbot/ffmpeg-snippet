@@ -1,6 +1,12 @@
 import { ProcessStage } from ".";
 import { FFmpegCommandLine } from "./commandLine";
 
+export interface SnippetSuggestion {
+  title: string;
+  options: Record<string, any>;
+  type: string;
+}
+
 export interface DefineSnippetOptions<Options> {
   title: string;
   keywords: string;
@@ -52,7 +58,7 @@ export interface DefineSnippetOptions<Options> {
    * }
    * ```
    */
-  recommend?(cmd: FFmpegCommandLine): Iterable<{ title?: string; options?: Partial<Options> }>;
+  recommend?(cmd: FFmpegCommandLine): Iterable<Partial<SnippetSuggestion>>;
 }
 
 export type FFSnippet<Options> = Required<DefineSnippetOptions<Options>>;

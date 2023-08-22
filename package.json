@@ -14,7 +14,8 @@
     "lodash": "^4.17.21",
     "pinia": "^2.1.6",
     "vue": "^3.3.4",
-    "vuedraggable": "^4.1.0"
+    "vuedraggable": "^4.1.0",
+    "yon-utils": "^0.1.15"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.1.53",
