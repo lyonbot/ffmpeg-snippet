@@ -3,7 +3,7 @@ import Draggable from "vuedraggable";
 import { useEditorStore } from "@/stores";
 import { NButton, NForm } from "naive-ui";
 import { computed, nextTick, ref, watch } from "vue";
-import { ProcessStage, stageOrderList } from "@/common";
+import { ProcessStage, SnippetSuggestion, stageOrderList, suggestionToStep } from "@/common";
 import StepTab from "./StepTab.vue";
 import AddStep from "./AddStep.vue";
 
@@ -14,21 +14,43 @@ const selectedStep = computed(() => editor.result.stepsOutput.find((s) => s.step
 // ----------------------------------------
 // draggable
 
-function handleDraggableChange(e: {
-  moved?: {
-    oldIndex: number;
-    newIndex: number;
-    element: (typeof draggableSections)["value"][number]["steps"][number];
-  };
-}) {
-  if (typeof e.moved?.oldIndex !== "number") return;
+function handleDraggableChange(
+  indexOffset: number,
+  e: {
+    added?: {
+      newIndex: number;
+      element: SnippetSuggestion | (typeof draggableSections)["value"][number]["steps"][number];
+    };
+    moved?: {
+      oldIndex: number;
+      newIndex: number;
+      element: SnippetSuggestion | (typeof draggableSections)["value"][number]["steps"][number];
+    };
+  }
+) {
+  // note: dragging source could be
+  // 1. Current list itself
+  // 2. Suggestions from <AddStep />
 
-  const { oldIndex, newIndex } = e.moved;
-  const indexOffset = e.moved.element.index - oldIndex;
+  let oldIndex = e.moved?.oldIndex;
+  let newIndex = e.moved?.oldIndex || e.added?.newIndex;
+  let element = e.moved?.element || e.added?.element;
 
   const list = editor.workflow.process.slice();
-  const taken = list.splice(oldIndex + indexOffset, 1);
-  list.splice(newIndex + indexOffset, 0, ...taken);
+
+  if (typeof oldIndex === "number") {
+    list.splice(oldIndex + indexOffset, 1);
+  }
+
+  if (element && typeof newIndex === "number") {
+    const step = "type" in element ? suggestionToStep(element) : element.item.step;
+    list.splice(newIndex + indexOffset, 0, step);
+
+    if ("type" in element) {
+      // is from Suggestion
+      selectedStepId.value = step.id;
+    }
+  }
 
   editor.updateProcessList(list);
 }
@@ -80,6 +102,21 @@ watch(
     }
   }
 );
+
+const confirmingDelete = ref(false);
+function hideForm() {
+  selectedStepId.value = "";
+}
+function deleteStepFromForm() {
+  if (!confirmingDelete.value) {
+    confirmingDelete.value = true;
+    return;
+  }
+
+  const steps = editor.workflow.process.filter((it) => it.id !== selectedStepId.value);
+  editor.updateProcessList(steps);
+  confirmingDelete.value = false;
+}
 </script>
 
 <template>
@@ -91,7 +128,7 @@ watch(
         :group="`stage-${stage}`"
         :model-value="steps"
         :item-key="({item}: typeof steps[number]) => item.step.id"
-        @change="handleDraggableChange"
+        @change="handleDraggableChange(steps[0]?.index || 0, $event)"
         @start="draggingStage = stage"
         @end="draggingStage = null"
         :animation="100"
@@ -125,15 +162,31 @@ watch(
     </div>
 
     <!-- step configuration form -->
-    <div class="stepForm" :key="selectedStepId" v-if="selectedStep" :style="formStyle" ref="formDiv">
+    <div
+      class="stepForm"
+      :key="selectedStepId"
+      v-if="selectedStep"
+      :style="formStyle"
+      tabindex="-1"
+      ref="formDiv"
+      @keydown.capture="if ($event.code === 'Escape') hideForm();"
+    >
       <div class="stepForm-arrow" :style="{ top: `${arrowOffset}px` }">
         <svg view-box="0 0 7 13" width="7" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M7 0L0.5 6.5L7 13" fill="white" stroke="#333" stroke-width="1" />
         </svg>
       </div>
 
-      <div class="mb-4">
-        <NButton @click="selectedStepId = ''">Done</NButton>
+      <div class="mb-4 flex gap-2">
+        <NButton @click="hideForm" type="primary">Done</NButton>
+        <n-button
+          @blur="confirmingDelete = false"
+          @mouseleave="confirmingDelete = false"
+          @click="deleteStepFromForm"
+          :ghost="!confirmingDelete"
+          :type="confirmingDelete ? 'error' : 'default'"
+          >{{ confirmingDelete ? "Sure?" : "Delete" }}</n-button
+        >
       </div>
 
       <NForm label-placement="left">

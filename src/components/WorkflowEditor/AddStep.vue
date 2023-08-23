@@ -2,7 +2,7 @@
 import { useEditorStore, useSnippetsStore } from "@/stores";
 import { computed, nextTick, shallowRef } from "vue";
 import StepTab from "./StepTab.vue";
-import { ProcessStage, SnippetSuggestion } from "@/common";
+import { ProcessStage, SnippetSuggestion, suggestionToStep } from "@/common";
 import Draggable from "vuedraggable";
 
 const emit = defineEmits<{
@@ -22,18 +22,10 @@ function handleDragStart({ oldIndex }: { oldIndex: number }) {
 }
 
 function applySuggestion(s: SnippetSuggestion) {
-  const id = s.type + "." + Math.random().toString(16).slice(-4);
-  editor.updateProcessList([
-    ...editor.workflow.process,
-    {
-      id,
-      type: s.type,
-      options: s.options,
-      disabled: false,
-    },
-  ]);
+  const step = suggestionToStep(s);
+  editor.updateProcessList([...editor.workflow.process, step]);
 
-  nextTick(() => emit("add", id));
+  nextTick(() => emit("add", step.id));
 }
 </script>
 
@@ -41,12 +33,13 @@ function applySuggestion(s: SnippetSuggestion) {
   <input type="text" />
 
   <div class="suggestions text-purple-6" v-if="suggestedSnippets.length">
-    <div class="text-amber-5 ml--5">
-      <i class="i-mdi-star-four-points"></i>
+    <div class="text-amber-5">
+      <i class="i-mdi-creation text-xl"></i>
       Suggestions
     </div>
 
     <Draggable
+      class="suggestions-list ml5"
       :list="suggestedSnippets"
       :itemKey="(_:any, i:number) => i"
       :group="`stage-${draggingSuggestionSnippet?.stage}`"

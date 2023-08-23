@@ -1,10 +1,22 @@
 import { ProcessStage } from ".";
 import { FFmpegCommandLine } from "./commandLine";
+import { FFWorkflowStep } from "./workflow";
 
 export interface SnippetSuggestion {
   title: string;
   options: Record<string, any>;
   type: string;
+}
+
+export function suggestionToStep(s: SnippetSuggestion): FFWorkflowStep {
+  const id = s.type + "." + Math.random().toString(16).slice(-4);
+
+  return {
+    id,
+    type: s.type,
+    options: s.options,
+    disabled: false,
+  };
 }
 
 export interface DefineSnippetOptions<Options> {
