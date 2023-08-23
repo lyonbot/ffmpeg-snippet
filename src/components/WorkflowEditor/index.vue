@@ -185,7 +185,7 @@ function deleteStepFromForm() {
           @click="deleteStepFromForm"
           :ghost="!confirmingDelete"
           :type="confirmingDelete ? 'error' : 'default'"
-          >{{ confirmingDelete ? "Sure?" : "Delete" }}</n-button
+          >{{ confirmingDelete ? "Confirm?" : "Delete" }}</n-button
         >
       </div>
 

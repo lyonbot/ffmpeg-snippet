@@ -39,7 +39,7 @@ function applySuggestion(s: SnippetSuggestion) {
     </div>
 
     <Draggable
-      class="suggestions-list ml5"
+      class="suggestions-list ml5 max-w-xl flex flex-wrap gap-4 gap-y-1"
       :list="suggestedSnippets"
       :itemKey="(_:any, i:number) => i"
       :group="`stage-${draggingSuggestionSnippet?.stage}`"
