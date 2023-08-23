@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { NButton, NInput } from "naive-ui";
-import { useSnippetsStore, useEditorStore } from "./stores";
+import { useEditorStore } from "./stores";
 import { storeToRefs } from "pinia";
 import WorkflowEditor from "@/components/WorkflowEditor/index.vue";
 
-const snippets = useSnippetsStore();
 const editor = useEditorStore();
 
 const { workflow, result } = storeToRefs(editor);

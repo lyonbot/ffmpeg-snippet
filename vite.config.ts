@@ -10,6 +10,7 @@ export default defineConfig({
   plugins: [UnoCSS(), vue()],
   resolve: {
     alias: {
+      lodash: "lodash-es",
       "@": path.resolve(__dirname, "./src"),
     },
   },

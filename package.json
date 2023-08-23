@@ -11,7 +11,7 @@
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.2",
     "@ffmpeg/util": "^0.12.0",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "pinia": "^2.1.6",
     "vue": "^3.3.4",
     "vuedraggable": "^4.1.0",

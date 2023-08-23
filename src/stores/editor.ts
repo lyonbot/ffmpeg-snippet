@@ -44,7 +44,7 @@ const debugWorkflow: FFWorkflow = {
 export const useEditorStore = defineStore("editor", {
   state() {
     return {
-      workflow: debugWorkflow,
+      workflow: import.meta.env.PROD ? emptyWorkflow : debugWorkflow,
     };
   },
   getters: {

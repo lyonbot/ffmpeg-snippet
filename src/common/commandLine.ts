@@ -60,7 +60,7 @@ export class FFmpegCommandLine {
     // -----
     // add inputs
 
-    this.inputs.forEach((input, index) => {
+    this.inputs.forEach((input) => {
       const prepend: string[] = [];
       for (const [key, value] of Object.entries(input.arguments || {})) {
         prepend.push(`-${key}`, String(value));

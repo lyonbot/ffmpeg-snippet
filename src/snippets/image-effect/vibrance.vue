@@ -1,7 +1,7 @@
 <script lang="ts">
 import { NFormItem, NInputNumber } from "naive-ui";
 
-import { defineSnippet, ProcessStage, extname, filter, ee, guessTypeByFilename } from "@/common";
+import { defineSnippet, ProcessStage, filter, guessTypeByFilename } from "@/common";
 import { useObjectModel } from "@/utils/useObjectModel";
 import type { ParamsComponentExposes } from "..";
 
