@@ -1,6 +1,6 @@
 import { toArray } from "yon-utils";
 import { flatten, isObject } from "lodash";
-import { FFmpegCommandLine, ProcessStage, SnippetSuggestion, stageOrderDict, stageOrderList } from "@/common";
+import { FFmpegCommandLine, ProcessStage, SnippetSuggestion, guessTypeByFilename, stageOrderDict, stageOrderList } from "@/common";
 import { FFWorkflow, FFWorkflowStep } from "@/common/workflow";
 import { defineStore } from "pinia";
 import { useSnippetsStore } from ".";
@@ -87,6 +87,28 @@ export const useEditorStore = defineStore("editor", {
         stepsOutput,
         cmdArgs: ffArgs.toCommandArguments(),
       };
+    },
+    suggestedOutputNames(state) {
+      const mat = /([^/\\]*)(\.\w+)$/.exec(state.workflow.inputs[0]?.path || '');
+      if (!mat) return []
+      const [fullName, basename, /* extname */] = mat;
+      const type = guessTypeByFilename(fullName);
+
+      const output = [] as Array<{ name: string, title?: string }>
+      if (type === 'video') {
+        output.push({ name: basename + '.gif', title: 'GIF' })
+        output.push({ name: basename + '.m4a', title: 'm4a' })
+        output.push({ name: basename + '.mp3', title: 'mp3' })
+        output.push({ name: 'frame%03d.jpg' })
+      }
+      if (type === 'image') {
+        output.push({ name: basename + '.mp4', title: 'mp4' })
+      }
+      if (type === 'audio') {
+        output.push({ name: basename + '.mp4', title: 'mp4' })
+      }
+
+      return output
     },
     suggestedSnippets(state) {
       const snippetStore = useSnippetsStore();

@@ -17,7 +17,7 @@ const { workflow, result } = storeToRefs(editor);
     <div class="section-label">Input:</div>
     <div class="section-content">
       <div v-for="it in workflow.inputs">
-        <NInput v-model:value="it.path" />
+        <NInput v-model:value="it.path" placeholder="xxx.mp4" />
 
         <div class="text-amber-5">
           <i class="i-mdi-lightbulb-on"></i>
@@ -29,9 +29,11 @@ const { workflow, result } = storeToRefs(editor);
     <!-- output -->
     <div class="section-label">Output:</div>
     <div class="section-content flex gap-1">
-      <NInput v-model:value="workflow.outputName" />
-      <NButton @click="workflow.outputName = '1.gif'">GIF</NButton>
-      <NButton @click="workflow.outputName = 'frame%d.jpg'">frame%d.jpg</NButton>
+      <NInput v-model:value="workflow.outputName" placeholder="xxx.m4a" />
+
+      <NButton v-for="{ name, title = name } in editor.suggestedOutputNames" @click="workflow.outputName = name">
+        {{ title }}
+      </NButton>
     </div>
 
     <!-- Process -->
