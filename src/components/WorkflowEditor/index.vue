@@ -3,9 +3,10 @@ import Draggable from "vuedraggable";
 import { useEditorStore } from "@/stores";
 import { NButton, NForm } from "naive-ui";
 import { computed, nextTick, ref, watch } from "vue";
-import { ProcessStage, SnippetSuggestion, stageOrderList, suggestionToStep } from "@/common";
+import { ProcessStage, stageOrderList } from "@/common";
 import StepTab from "./StepTab.vue";
 import AddStep from "./AddStep.vue";
+import { AddStepListItem } from "./AddStepList.vue";
 
 const editor = useEditorStore();
 const selectedStepId = ref("");
@@ -19,12 +20,12 @@ function handleDraggableChange(
   e: {
     added?: {
       newIndex: number;
-      element: SnippetSuggestion | (typeof draggableSections)["value"][number]["steps"][number];
+      element: AddStepListItem | (typeof draggableSections)["value"][number]["steps"][number];
     };
     moved?: {
       oldIndex: number;
       newIndex: number;
-      element: SnippetSuggestion | (typeof draggableSections)["value"][number]["steps"][number];
+      element: AddStepListItem | (typeof draggableSections)["value"][number]["steps"][number];
     };
   }
 ) {
@@ -43,12 +44,12 @@ function handleDraggableChange(
   }
 
   if (element && typeof newIndex === "number") {
-    const step = "type" in element ? suggestionToStep(element) : element.item.step;
-    list.splice(newIndex + indexOffset, 0, step);
+    const steps = "getSteps" in element ? element.getSteps() : [element.item.step];
+    list.splice(newIndex + indexOffset, 0, ...steps);
 
-    if ("type" in element) {
+    if ( "getSteps" in element && steps.length>0) {
       // is from Suggestion
-      selectedStepId.value = step.id;
+      selectedStepId.value = steps[0].id;
     }
   }
 

@@ -166,7 +166,7 @@ export const useEditorStore = defineStore("editor", {
       }
 
       const finalList = flatten([...subLists, unknownList]);
-      if (finalList.some((s, i) => this.workflow.process[i].id !== s.id)) {
+      if (finalList.some((s, i) => this.workflow.process[i]?.id !== s.id)) {
         // order fixed!
         this.workflow.process = finalList;
       }

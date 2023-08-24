@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useEditorStore, useSnippetsStore } from "@/stores";
-import { computed, nextTick, shallowRef } from "vue";
-import StepTab from "./StepTab.vue";
-import { ProcessStage, SnippetSuggestion, suggestionToStep } from "@/common";
-import Draggable from "vuedraggable";
+import { computed, nextTick } from "vue";
+import { ProcessStage, suggestionToStep } from "@/common";
+import AddStepList, { AddStepListItem } from "./AddStepList.vue";
+import { toArray } from "yon-utils";
 
 const emit = defineEmits<{
   (type: "add", id: string): void;
@@ -12,20 +12,22 @@ const emit = defineEmits<{
 
 const editor = useEditorStore();
 const snippets = useSnippetsStore();
-const suggestedSnippets = computed(() => editor.suggestedSnippets);
+const suggestedSnippets = computed((): AddStepListItem[] =>
+  editor.suggestedSnippets.map((v) => ({
+    stage: snippets.dict[v.type]?.stage || null,
+    title: v.title,
+    getSteps() {
+      return [suggestionToStep(v)];
+    },
+  }))
+);
 
-const draggingSuggestion = shallowRef<SnippetSuggestion>();
-const draggingSuggestionSnippet = computed(() => snippets.dict[draggingSuggestion.value?.type!]);
-function handleDragStart({ oldIndex }: { oldIndex: number }) {
-  draggingSuggestion.value = suggestedSnippets.value[oldIndex];
-  emit("dragStageChange", draggingSuggestionSnippet.value?.stage);
-}
+function applySuggestion(s: (typeof suggestedSnippets)["value"][0]) {
+  const steps = toArray(s.getSteps());
+  editor.updateProcessList([...editor.workflow.process, ...steps]);
 
-function applySuggestion(s: SnippetSuggestion) {
-  const step = suggestionToStep(s);
-  editor.updateProcessList([...editor.workflow.process, step]);
-
-  nextTick(() => emit("add", step.id));
+  let id = steps[0]?.id;
+  if (id) nextTick(() => emit("add", id));
 }
 </script>
 
@@ -38,18 +40,11 @@ function applySuggestion(s: SnippetSuggestion) {
       Suggestions
     </div>
 
-    <Draggable
-      class="suggestions-list ml5 max-w-xl flex flex-wrap gap-4 gap-y-1"
+    <AddStepList
       :list="suggestedSnippets"
-      :itemKey="(_:any, i:number) => i"
-      :group="`stage-${draggingSuggestionSnippet?.stage}`"
-      @start="handleDragStart($event)"
-      @end="emit('dragStageChange', null), (draggingSuggestion = undefined)"
-    >
-      <template #item="{ element: s }">
-        <StepTab :title="s.title" @select="applySuggestion(s)" />
-      </template>
-    </Draggable>
+      @select="applySuggestion"
+      @dragStageChange="emit('dragStageChange', $event)"
+    />
   </div>
 </template>
 
